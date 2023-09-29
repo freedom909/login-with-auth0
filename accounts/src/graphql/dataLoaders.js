@@ -6,7 +6,7 @@ dotenv.config();
 function initDataLoaders(){
     const accouontLoader=new DataLoader(async keys=>{
         const q=keys.map(key=>`user_id:${key}`).join("OR")
-        const accounts=await auth0.getUsers({search_engin:"v4",q})
+        const accounts = await auth0.getUsers({ search_engine: "v4", q });
         return keys.map(key=>accounts.find(account=>account.user_id===key))
 
     })

@@ -15,7 +15,8 @@ dotenv.config()
 
 const __dirname = dirname(fileURLToPath(import.meta. url));
 const port = process .env. PORT;
-const subgraphName = 'accounts';
+const subgraphName = 'profiles'
+
 
 const { authDirectivesTypeDefs,  authDirectivesTransformer } =authDirectives()
 const subgraphTypeDefs = readFileSync(

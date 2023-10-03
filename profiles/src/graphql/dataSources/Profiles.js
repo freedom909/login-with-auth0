@@ -55,5 +55,65 @@ class ProfilesAPI extends RESTDataSource {
       return false;
     }
   }
+  async addToNetWork(accountId,accountIdToFollow){
+if (accountId===accountIdToFollow) {
+  throw new ApolloServerErrorCode.BAD_USER_INPUT("User cannot be added to their own network")
 }
+    const account = await this.Profile.findOneAndUpdate({ accountId: accountId });
+    const accountToFollow = await this.Profile.findOneAndUpdate({ accountId: accountIdToFollow });
+    if (!account || !accountToFollow) {
+      throw new ApolloServerErrorCode.BAD_USER_INPUT(
+        "User not found"
+      );
+    }
+    if (account.following.includes(accountToFollow.accountId)) {
+      throw new ApolloServerErrorCode.BAD_USER_INPUT(
+        "User already added to network"
+      );
+    }
+    const updatedAccount = await this.Profile.findOneAndUpdate
+    ({ accountId : accountId},{$push:{ following:[accountToFollow]}}) 
+    const updatedAccountToFollow = await this.Profile.findOneAndUpdate
+    ({ accountId : accountIdToFollow},{
+      $push:{ followers:[account]}
+    })
+    return { updatedAccount, updatedAccountToFollow };
+  }
+  async removeFromNetwork(accountId,accountIdToRemove){
+if (accountId===accountIdToRemove) {
+  throw new ApolloServerErrorCode.BAD_USER_INPUT("User cannot be removed from their own network")
+  }
+    const account = await this.Profile.findOneAndUpdate({ accountId: accountId });
+    const accountToRemove = await this.Profile.findOneAndUpdate({ accountId: accountIdToRemove });
+    if (!account || !accountToRemove) {
+      throw new ApolloServerErrorCode.BAD_USER_INPUT(
+        "User not found"
+      );
+    }
+    if (!account.following.includes(accountToRemove.accountId)) {
+      throw new ApolloServerErrorCode.BAD_USER_INPUT(
+        "User not in network"
+      );
+    }
+    const updatedAccount = await this.Profile.findOneAndUpdate
+    ({ accountId : accountId},{
+      $pull:{ following:[accountToRemove.accountId]}
+    })
+    const updatedAccountToRemove = await this.Profile.findOneAndUpdate
+    ({ accountId : accountIdToRemove }, {$pull:{followers:[updatedAccount]}} )
+    return { updatedAccount, updatedAccountToRemove };
+    }
+    async getNetworkProfiles(newwork){
+      return this.Profile.find({accountId:{$in:newwork}}).exec()
+    }
+    async checkViewerHasInNetwork(viewerAccountId,accountId){
+      const viewerProfile=await this.Profile.findOne({
+        accountId:viewerAccountId 
+      }).select("network").exec()
+    return viewerProfile.network.includes(accountId)
+  }
+  }
+
+ 
+
 export default ProfilesAPI;

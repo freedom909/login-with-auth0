@@ -22,6 +22,7 @@ const resolvers = {
                 throw new ApolloServerErrorCode.BAD_USER_INPUT("Profiles not available.");
             }
         },
+    },
         Profile: {
             __resolveReference(reference, { dataSources, user }) {
                 if (user?.sub) {
@@ -38,7 +39,18 @@ const resolvers = {
             },
             id(profile) {
                 return profile._id;
+            },
+            network(profile,_,{dataSources}){
+                return dataSources.ProfilesAPI.getNetworkProfiles(profile.network)
+            },
+            networkId(profile){
+                return profile._id
+            },
+            isInNetNetwork(profile,_,{dataSources,user}){
+                return dataSources.ProfilesAPI.checkViewerHasInNetWork(user.sub,profile.accountId)
             }
+            
+
         },
 
 
@@ -47,6 +59,7 @@ const resolvers = {
                 return dataSources.ProfilesAPI.getProfile({ accountId: account.id })
             }
         },
+
         Mutation: {
             createProfile(root, { input }, { dataSources }) {
                 return dataSources.ProfilesAPI.createProfile(input);
@@ -57,9 +70,14 @@ const resolvers = {
     
              deleteProfile(_,{ accountId},{dataSources}){
                 return dataSources.ProfilesAPI.deleteProfile( accountId);
-             }
-        
+             },
+        addToNetwork(_,{input:{accountId,newworkMemberId}},{dataSources}){
+            return dataSources.ProfilesAPI.addToNetwork(accountId,newworkMemberId);
+        },
+        removeFromNetwork(_,{input:{accountId,newworkMemberId}},{dataSources}){
+            return dataSources.ProfilesAPI.removeFromNetwork(accountId,newworkMemberId);
         }
+        
     }
 };
 export default resolvers; 

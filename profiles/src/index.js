@@ -50,7 +50,7 @@ async function startApolloServer() {
           port,
         },
       });
-  
+      initMongoose();
       console.log(`🚀 Subgraph ${subgraphName} running at ${url}`);
     } catch (err) {
       console.error(err);

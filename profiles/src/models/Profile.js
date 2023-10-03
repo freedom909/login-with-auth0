@@ -24,5 +24,7 @@ const profileSchema = new mongoose.Schema({
         trim:true
     }
 })
+
+// profileSchema.index({fullname:"text",username:"text"})
 const Profile=mongoose.model("Profile",profileSchema)
-export default Profile
+export default Profile;

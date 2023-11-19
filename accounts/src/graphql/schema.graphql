@@ -9,8 +9,6 @@ type Account @key(fields:"id"){
     id: ID!
      "The email associated with the account (must be unique)."
     email:String!
-     "The timestamp when the account was created.
-    createdAt:DateTime!
 }
 
 # INPUTS

@@ -1,72 +1,66 @@
 
 
-
+import auth0 from "../config/auth0.js";
+import getToken from "../utils/getToken.js";
 import { GraphQLError } from "graphql";
+
 import { DateTimeType } from "../../../shared/index.js";
 
 const resolvers = {
   DateTime: DateTimeType,
 
   Account: {
-    __resolveReference(_, { dataSource, user }) {
+    __resolveReference(_, { dataSources, user }) {
       if (user?.sub) {
-        return dataSource.accountsAPI.getAccountById(_.id);
+        return dataSources.accountsDataSource.getAccountById(_.id);
       }
-      throw new GraphQLError("not authorized", {
-        extensions: {
-          code: "UNAUTHORIZED",
-        },
-      });
+      throw new ApolloError("Not authorized!");
     },
     id(account) {
-      return account.id;
+      return account.user_id;
     },
     createdAt(account) {
-      return account.createdAt;
-    },
+      return account.created_at;
+    }
   },
 
   Query: {
-    account: (_, { id }, { dataSource }) => {
-      return dataSource.accountsAPI.getAccountById(id);
+    account(root, { id }, { dataSources }) {
+      return dataSources.accountsDataSource.getAccountById(id);
     },
-    accounts: (_, __, { dataSource }) => {
-      return dataSource.accountsAPI.getAccounts();
+    accounts(root, args, { dataSources }) {
+      return dataSources.accountsDataSource.getAccounts();
     },
-    viewer: (_, __, { dataSource, user }) => {
+    viewer(root, args, { dataSources, user }) {
       if (user?.sub) {
-        return dataSource.accountsAPI.getAccountById(user.sub);
+        return dataSources.accountsDataSource.getAccountById(user.sub);
       }
       return null;
-    },
+    }
   },
 
   Mutation: {
-    createAccount: (_, { createAccountInput }, { dataSource }) => {
-      const { email, password } = createAccountInput;
-      return dataSource.accountsAPI.createAccount({ email, password });
+    createAccount(root, { input: { email, password } }, { dataSources }) {
+      return dataSources.accountsDataSource.createAccount(email, password);
     },
-    updateAccount: (_, { input: updateAccountEmailInput }, { dataSource }) => {
-      const { id, email } = updateAccountEmailInput;
-      return dataSource.accountsAPI.updateAccountEmail({ id, email });
+    deleteAccount(root, { id }, { dataSources }) {
+      return dataSources.accountsDataSource.deleteAccount(id);
     },
-    deleteAccount: (_, { id }, { dataSource }) => {
-      return dataSource.accountsAPI.deleteAccount(id);
+    updateAccountEmail(root, { input: { id, email } }, { dataSources }) {
+      return dataSources.accountsDataSource.updateAccountEmail(id, email);
     },
-
-    updateAccountPassword: (
-      _,
-      { input: UpdateAccountPasswordInput },
-      { dataSource }
-    ) => {
-      const { id, password, newPassword } = UpdateAccountPasswordInput;
-      return dataSource.accountsAPI.updateAccountPassword(
+    updateAccountPassword(
+      root,
+      { input: { id, newPassword, password } },
+      { dataSources }
+    ) {
+      return dataSources.accountsDataSource.updateAccountPassword(
         id,
-        password,
-        newPassword
+        newPassword,
+        password
       );
-    },
-  },
+    }
+  }
 };
 
 export default resolvers;

@@ -1,57 +1,67 @@
 import { RESTDataSource } from '@apollo/datasource-rest';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import getToken from "../../utils/getToken.js";
+import { domainToASCII } from 'url'; // Import domainToASCII from the url module
 
-export default class AccountsAPI extends RESTDataSource { 
-   constructor({auth0}) {
-        super();
-        this.auth0=auth0
+
+class AccountsDataSource extends RESTDataSource {
+  constructor({ auth0 }) {
+    super();
+    this.auth0 = auth0;
+  }
+
+  initialize(config) {
+    this.context = config.context;
+  }
+
+  // CREATE
+
+  createAccount(email, password) {
+    return this.auth0.createUser({
+      connection: "Username-Password-Authentication",
+      email,
+      password
+    });
+  }
+
+  // READ
+
+  getAccountById(id) {
+    return this.context.loaders.accountLoader.load(id);
+  }
+
+  getAccounts() {
+    return this.auth0.getUsers();
+  }
+
+  // UPDATE
+
+  updateAccountEmail(id, email) {
+    return this.auth0.updateUser({ id }, { email });
+  }
+
+  async updateAccountPassword(id, newPassword, password) {
+    const user = await this.auth0.getUser({ id });
+
+    try {
+      await getToken(user.email, password);
+    } catch {
+      throw new UserInputError("Email or existing password is incorrect.");
     }
 
-    initialize(config){
-        this.context=config.context
-    }
+    return this.auth0.updateUser({ id }, { password: newPassword });
+  }
 
-    async getAccounts() {
-        const accounts = await this.auth0.getUsers()
-        return accounts;
-    }
+  // DELETE
 
-    async getAccountById(id) {
-        const account = await this.context.loaders.acountLoader.load(id)
-        return account;
+  async deleteAccount(id) {
+    try {
+      await this.auth0.deleteUser({ id });
+      return true;
+    } catch {
+      return false;
     }
-
-    async createAccount(email,password) {
-        const newAccount = await this.auth0.createUser({connection:"User-Password-Authentication",email,password});
-        return newAccount;
-    }
-async updateAccountEmail(id, email) {
-        const updatedAccount = await this.auth0.updateUser({id},{email})
-        return updatedAccount;
-    }
-   async updateAccountPassword(id,password,newPassword){
-        const user=await this.auth0.getUser({id})
-        if(!user){
-            throw new ApolloServerErrorCode.BAD_USER_INPUT('User not found')
-        }
-        const errorCodesToIgnore=["BAD_USER_INPUT","GRAPHQL_VALIDATION_FAILED"]
-        const errorCode=error.extensions?error.extensions.code:null;
-        if (errorCode&&errorCodesToIgnore.includes(errorCode)) {
-            return 
-        }
-       
-            await getToken(user.email,password)
-            return this.auth0.updatedAccount({id},{password:newPassword})
-        }
-
-    async deleteAccount(id) {
-        try {
-             await this.auth0.deleteUser(id);
-             return true
-        } catch (error) {
-            return false
-        }
-    }
+  }
 }
 
+export default AccountsDataSource

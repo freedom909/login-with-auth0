@@ -4,12 +4,15 @@ extend schema
 """
 An account is a unique user.
 """
-type Account @key(fields:"id"){
-     "The unique ID associated with the account."
-    id: ID!
-     "The email associated with the account (must be unique)."
-    email:String!
+type Account @key(fields: "id") @extends {
+  "The unique ID associated with the account."
+  id: ID! @external
+  "The email associated with the account (must be unique)."
+  email: String!
+  "The date and time the account was created."
+  createdAt: String!
 }
+
 
 # INPUTS
 
@@ -58,14 +61,14 @@ type Query {
 
 type Mutation {
   "Creates a new account."
-  createAccount(input: CreateAccountInput!): Account!
+  createAccount(input: CreateAccountInput!): Account! @private
   "Deletes an account."
-  deleteAccount(id: ID!): Boolean! @scope(permissions: ["delete:accounts"])
+  deleteAccount(id: ID!): Boolean! @private
   "Updates an account's email."
-  updateAccountEmail(input: UpdateAccountEmailInput!): Account!
+  updateAccountEmail(input: UpdateAccountEmailInput!): Account! @private
     @owner(argumentName: "input.id")
   "Updates an account's password."
-  updateAccountPassword(input: UpdateAccountPasswordInput!): Account!
+  updateAccountPassword(input: UpdateAccountPasswordInput!): Account! @private
     @owner(argumentName: "input.id")
 }
 

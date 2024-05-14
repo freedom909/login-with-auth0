@@ -1,8 +1,8 @@
 import util from "util";
 import axios from "axios";
-import { error } from "console";
+import { GraphQLError } from 'graphql';
 
-const requestPromise = util.promisify(axios);
+
 
 async function getToken(username, password) {
   const options = {
@@ -10,7 +10,7 @@ async function getToken(username, password) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    data: {
+    form:{
       audience: process.env.AUTH0_AUDIENCE,
       client_id: process.env.AUTH0_CLIENT_ID_GRAPHQL,
       client_secret: process.env.AUTH0_CLIENT_SECRET_GRAPHQL,

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.js"
+    "start": "node --experimental-modules src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +21,16 @@
     "dataloader": "^2.2.2",
     "dotenv": "^16.3.1",
     "graphql": "^16.8.1",
+    "graphql-import-node": "^0.0.5",
     "graphql-tag": "^2.12.6",
-    "http": "^0.0.1-security"
+    "http": "^0.0.1-security",
+    "lodash-es": "^4.17.21",
+    "util": "^0.12.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "resolutions": {
+    "graphql": "^16.8.1"
   }
 }

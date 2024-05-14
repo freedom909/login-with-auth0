@@ -15,60 +15,60 @@ function authDirectives() {
       resolve(__dirname, "./authDirectives.graphql"),
       "utf-8"
     ),
-    authDirectivesTransformer: schema =>
-      mapSchema(schema, {
-        [MapperKind.OBJECT_FIELD]: fieldConfig => {
-          const fieldDirectives = getDirectives(schema, fieldConfig);
-          const privateDirective = fieldDirectives.find(
-            dir => dir.name === "private"
-          );
-          const ownerDirective = fieldDirectives.find(
-            dir => dir.name === "owner"
-          );
-          const scopeDirective = fieldDirectives.find(
-            dir => dir.name === "scope"
-          );
 
-          const { resolve = defaultFieldResolver } = fieldConfig;
+authDirectivesTransformer: schema =>
+  mapSchema(schema, {
+    [MapperKind.OBJECT_FIELD]: fieldConfig => {
+      const fieldDirectives = getDirectives(schema, fieldConfig);
+      const privateDirective = fieldDirectives.find(
+        dir => dir.name === "private"
+      );
+      const ownerDirective = fieldDirectives.find(
+        dir => dir.name === "owner"
+      );
+      const scopeDirective = fieldDirectives.find(
+        dir => dir.name === "scope"
+      );
 
-          if (privateDirective || ownerDirective || scopeDirective) {
-            fieldConfig.resolve = function (source, args, context, info) {
-              const privateAuthorized = privateDirective && context.user?.sub;
-              const ownerArgAuthorized =
-                ownerDirective &&
-                context.user?.sub &&
-                get(args, ownerDirective.args.argumentName) ===
-                  context.user.sub;
+      const { resolve = defaultFieldResolver } = fieldConfig;
 
-              let scopeAuthorized = false;
-              if (scopeDirective && context.user?.scope) {
-                const tokenPermissions = context.user.scope.split(" ");
-                scopeAuthorized = scopeDirective.args.permissions.every(scope =>
-                  tokenPermissions.includes(scope)
-                );
-              }
+      if (privateDirective || ownerDirective || scopeDirective) {
+        fieldConfig.resolve = function (source, args, context, info) {
+          const privateAuthorized = privateDirective && context.user?.sub;
+          const ownerArgAuthorized =
+            ownerDirective &&
+            context.user?.sub &&
+            get(args, ownerDirective.args.argumentName) ===
+              context.user.sub;
 
-              if (
-                (privateDirective && !privateAuthorized) ||
-                (ownerDirective && !ownerArgAuthorized) ||
-                (scopeDirective && !scopeAuthorized)
-              ) {
-                throw new GraphQLError("Not authorized!",{
-                  extensions:{
-                    code: 'AUTH_ERROR',
-                    permissions: scopeDirective?.args.permissions
-                  }
-                });
-              }
-
-              return resolve(source, args, context, info);
-            };
-
-            return fieldConfig;
+          let scopeAuthorized = false;
+          if (scopeDirective && context.user?.scope) {
+            const tokenPermissions = context.user.scope.split(" ");
+            scopeAuthorized = scopeDirective.args.permissions.every(scope =>
+              tokenPermissions.includes(scope)
+            );
           }
-        }
-      })
-  };
-}
 
+          if (
+            (privateDirective && !privateAuthorized) ||
+            (ownerDirective && !ownerArgAuthorized) ||
+            (scopeDirective && !scopeAuthorized)
+          ) {
+            throw new GraphQLError("Not authorized!",{
+              extensions:{
+                code: 'AUTH_ERROR',
+                permissions: scopeDirective?.args.permissions
+              }
+            });
+          }
+
+          return resolve(source, args, context, info);
+        };
+
+        return fieldConfig;
+      }
+    }
+  })
+};
+}
 export default authDirectives;

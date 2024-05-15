@@ -19,11 +19,14 @@ const subgraphName = 'profiles'
 
 
 const { authDirectivesTypeDefs,  authDirectivesTransformer } =authDirectives()
-const subgraphTypeDefs = readFileSync(
-    resolve(__dirname, "./graphql/schema.graphql" ),
-"utf-8"
-);
-const typeDefs = gql(` ${subgraphTypeDefs}\n${authDirectivesTypeDefs} `) ;
+
+const subgraphTypeDefs = gql(readFileSync('./src/graphql/schema.graphql', {encoding:'utf-8'}));
+
+const typeDefs = gql`
+ ${subgraphTypeDefs},
+ ${authDirectivesTypeDefs} 
+ ` ;
+console.log(typeDefs)
 let subgraphSchema = buildSubgraphSchema({ typeDefs,  resolvers });
 subgraphSchema = authDirectivesTransformer(subgraphSchema);
 

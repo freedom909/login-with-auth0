@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --experimental-modules src/index.js"
+    "start": "nodemon --experimental-modules src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +15,9 @@
     "@apollo/datasource-rest": "^6.2.1",
     "@apollo/server": "^4.9.3",
     "@apollo/subgraph": "^2.5.5",
+    "@graphql-tools/graphql-file-loader": "^8.0.1",
+    "@graphql-tools/load": "^8.0.2",
+    "@graphql-tools/schema": "^10.0.3",
     "auth0": "^4.0.1",
     "axios": "^1.5.1",
     "body-parser": "^1.20.2",
